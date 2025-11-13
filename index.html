@@ -368,7 +368,7 @@
     <div id="ekran-wideo" class="ekran ukryty">
         <video id="player-wideo" src="Koszmar-mini.mp4"></video>
 
-        <button id="przycisk-start-wideo">ODTWÓRZ</button>
+        <button id="przycisk-start-wideo">ODTWORZ</button>
     </div>
 
     <div id="ekran-final" class="ekran ukryty">
@@ -437,7 +437,7 @@
         // --- Logika "Dmuchnięcia" (bez zmian) ---
         let stanDmuchniecia = 0;
         let nasluchiwanieAktywne = true;
-        const POZIOM_DMUCHNIECIA = 70; 
+        const POZIOM_DMUCHNIECIA = 75; 
         async function startMikrofonu() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
