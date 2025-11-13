@@ -290,6 +290,15 @@
             width: 100%;
         }
 
+        #przycisk-start-wideo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 20; /* Ważne, by był NA wideo */
+            font-size: 1.2em; /* Możemy go trochę powiększyć */
+        }
+
         /* USUNIĘTE style dla #ekran-start, bo .ekran radzi sobie sam */
 
         @keyframes wstrzas {
@@ -353,11 +362,13 @@
 
     <div id="ekran-ujawnienie" class="ekran ukryty">
         <h2 style="color: #007bff;">Znam Twoje życzenie!</h2>
-        <p style="font-size: 1.3em;">Tak naprawde... chciałaś zobaczyć mnie! 😉</p>
+        <p style="font-size: 1.3em;">Tak naprawde... chciałaś zobaczyć mnie!</p>
     </div>
     
     <div id="ekran-wideo" class="ekran ukryty">
         <video id="player-wideo" src="Koszmar-mini.mp4"></video>
+
+        <button id="przycisk-start-wideo">ODTWÓRZ</button>
     </div>
 
     <div id="ekran-final" class="ekran ukryty">
@@ -387,6 +398,7 @@
         const statusPrzetwarzania = document.getElementById('status-przetwarzania');
         const playerWideo = document.getElementById('player-wideo');
         const konfettiCanvas = document.getElementById('konfetti-canvas');
+        const przyciskStartWideo = document.getElementById('przycisk-start-wideo');
         
        // --- NOWA, UPROSZCZONA Funkcja do przełączania ekranów ---
        function pokazEkran(ekranDoPokazania) {
@@ -473,7 +485,6 @@
             }
         }
 
-        // --- Logika Finału (bez zmian) ---
         function uruchomFinal() {
             nasluchiwanieAktywne = false; 
             obrazekTortu.src = 'dymek2.gif'; 
@@ -484,10 +495,13 @@
             setTimeout(() => { statusPrzetwarzania.textContent = "Sprawdzanie bazy danych marzeń..."; }, 3000); 
             setTimeout(() => { statusPrzetwarzania.textContent = "Analiza marzeń... ZNALEZIONO!"; }, 5000); 
             setTimeout(() => { pokazEkran(ekranUjawnienie); }, 6500); 
+    
+            // WRACA STARE PRZEJŚCIE DO WIDEO
             setTimeout(() => {
                 pokazEkran(ekranWideo);
-                playerWideo.play();
-            }, 9000); 
+                // ALE ZAMIAST play(), POKAZUJEMY PRZYCISK
+                przyciskStartWideo.style.display = 'block';
+            }, 9000); // (Oryginalny czas 9s)
         }
         
         // --- POPRAWIONA Funkcja Konfetti (zmienia z-index) ---
@@ -569,6 +583,12 @@
             }
         });
 
+        przyciskStartWideo.addEventListener('click', () => {
+            playerWideo.play();
+            // Ukryj przycisk po kliknięciu, żeby nie zasłaniał filmu
+            przyciskStartWideo.style.display = 'none';
+        });
+
         // --- NOWA FUNKCJA: EFEKT PISANIA NA MASZYNIE ---
         function startTypewriter(element, text, speed, onComplete) {
             let i = 0;
@@ -594,6 +614,8 @@
             }
             type();
         }
+
+        
     </script>
     
     </body>
