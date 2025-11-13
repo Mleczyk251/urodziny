@@ -440,7 +440,7 @@
         // --- Logika "Dmuchnięcia" (bez zmian) ---
         let stanDmuchniecia = 0;
         let nasluchiwanieAktywne = true;
-        const POZIOM_DMUCHNIECIA = 65; 
+        const POZIOM_DMUCHNIECIA = 50; 
         async function startMikrofonu() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -530,7 +530,7 @@
        // 1. Kliknięcie w PREZENT
        przyciskPrezent.addEventListener('click', () => {
         pokazEkran(ekranZagadka);
-           audioTlo.volume = 0.04; 
+           audioTlo.volume = 0.1; 
             audioTlo.play();
         });
 
