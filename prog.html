@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Niespodzianka!</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/confetti-js@0.0.18/dist/index.min.js"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <style>
+        /* NOWY STYL: Candy Pixel (Lila-Róż) */
+        
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background: linear-gradient(120deg, #FFD1E3 0%, #E0B0FF 100%);
+            color: #333;
+            /* USUNIĘTY display:flex - TO BYŁ PROBLEM */
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            image-rendering: pixelated; 
+        }
+
+        /* --- NOWA POPRAWKA CENTROWANIA (Rozwiązuje flasha) --- */
+        /* Wszystkie ekrany są teraz wyśrodkowane absolutnie */
+        .ekran {
+            text-align: center;
+            padding: 2.5em;
+            background: #fff;
+            border: 6px solid #000;
+            box-shadow: 10px 10px 0px rgba(0,0,0,1);
+            border-radius: 0;
+            max-width: 90%;
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+            z-index: 10;
+            
+            /* NOWE CENTROWANIE */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #ekran-start {
+            z-index: 11;
+        }
+        
+        h1 { font-size: 1.5em; line-height: 1.4; }
+        h2 { font-size: 1.1em; line-height: 1.4; }
+        p { font-size: 0.8em; line-height: 1.5; }
+
+        .ukryty {
+            display: none;
+            opacity: 0;
+            /* Usunięty transform, bo już jest na .ekran */
+        }
+
+        img {
+            max-width: 250px;
+            height: auto;
+            margin-bottom: 1.5em;
+            image-rendering: pixelated; 
+        }
+
+        button {
+            font-family: 'Press Start 2P', cursive;
+            background-color: #FF69B4;
+            color: white;
+            border: 4px solid #000;
+            box-shadow: 4px 4px 0px rgba(0,0,0,1);
+            padding: 15px 30px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            border-radius: 0;
+        }
+        button:hover {
+            background-color: #D1479B;
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px rgba(0,0,0,1);
+        }
+        button:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px rgba(0,0,0,1);
+        }
+        
+        input[type="text"] {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1em;
+            padding: 10px;
+            border-radius: 0;
+            border: 4px solid #000;
+            margin-right: 10px;
+            background: #eee;
+        }
+
+        #status-dmuchania {
+            font-size: 1em;
+            font-weight: bold;
+            color: #d9534f;
+            height: 50px;
+        }
+        
+        .progress-container {
+            width: 80%;
+            background-color: #e0e0e0;
+            border-radius: 0;
+            margin: 20px auto;
+            overflow: hidden;
+            border: 4px solid #000;
+            padding: 2px;
+        }
+        #progress-bar {
+            width: 0%;
+            height: 30px;
+            background-color: #FF69B4;
+            border-radius: 0;
+            transition: width 0.5s ease-in-out;
+            text-align: center;
+            line-height: 30px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.8em;
+        }
+
+        #przycisk-backup {
+            background: none; border: none; box-shadow: none;
+            color: #888; font-size: 0.7em; margin-top: 15px;
+            cursor: pointer; text-decoration: underline;
+        }
+        #przycisk-backup:hover { transform: none; box-shadow: none; color: #000; }
+        
+        #status-przetwarzania {
+            font-size: 1em; font-style: italic; color: #555;
+            height: 60px; display: flex; justify-content: center; align-items: center;
+        }
+        
+        #ekran-wideo {
+            width: 360px;       /* Ustawia sztywną szerokość */
+            max-width: 90%;   /* Ale niech się mieści na telefonie */
+            padding: 0;       /* Bez białych pasów dookoła */
+            background: #000; /* Czarne tło dla okna */
+            border: 6px solid #000; /* Zachowaj ramkę pixel-art */
+        }
+
+        /* 2. Styl samego odtwarzacza */
+        #player-wideo {
+            width: 100%;    /* Wypełnij 100% okna #ekran-wideo */
+            height: auto;   /* Wysokość dopasuje się automatycznie (16:9) */
+            display: block; /* Ważne, by usunąć dziwne marginesy */
+            border-radius: 0;
+            max-width: 100%; /* Zresetuj stary styl */
+            margin-bottom: -6px; /* Usuwa małą szparę pod wideo */
+        }
+        
+        #ekran-final h1 {
+            color: #FF69B4;
+            animation: puls 1.5s infinite;
+        }
+        @keyframes puls { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        
+        #konfetti-canvas { 
+            position: absolute; top: 0; left: 0; width: 100%; 
+            height: 100%; z-index: 5; 
+            pointer-events: none; 
+        }
+        
+        .prezent-container {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+        .prezent-container img {
+            transition: transform 0.2s ease;
+        }
+        .prezent-container:hover img {
+            transform: scale(1.05);
+        }
+        .hover-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 15px; /* Było 15px 25px */
+            font-size: 1.2em;
+            border: 4px solid white;
+            border-radius: 0; /* Było zaokrąglone */
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none; 
+        }
+        .prezent-container:hover .hover-text {
+            opacity: 1;
+        }
+
+        /* --- STYLE DLA EKRANU ZAGADKI (WERSJA "KARTKA") --- */
+
+        .kartka {
+            width: 800px;
+            max-width: 90%;
+            display: flex;
+            flex-direction: row;
+            text-align: left;
+            padding: 0;
+        }
+        .kartka-lewa-strona, .kartka-prawa-strona {
+            width: 50%;
+            padding: 2.5em;
+            box-sizing: border-box;
+        }
+        .kartka-lewa-strona {
+            border-right: 3px dashed #e0e0e0;
+        }
+        .kartka-lewa-strona h1 {
+            color: #FF69B4;
+            font-size: 1.8em;
+            margin-bottom: 25px;
+        }
+        .kartka-lewa-strona .zyczenia {
+            font-size: 0.9em;
+            font-style: italic;
+            color: #555;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        .kartka-lewa-strona .zyczenia-podpis {
+            font-size: 1em;
+            text-align: right;
+            color: #333;
+            font-style: normal;
+        }
+        .kartka-prawa-strona h2 {
+            font-size: 1.2em;
+            color: #333;
+            margin-bottom: 25px;
+        }
+        .kartka-prawa-strona .label-zagadki {
+            font-size: 1em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .kartka-prawa-strona .tresc-zagadki {
+            font-size: 0.9em;
+            color: #555;
+            font-style: italic;
+            margin-bottom: 25px;
+            line-height: 1.4;
+            min-height: 3em;
+        }
+        
+        /* --- POPRAWKA: USUNIĘTY KURSOR --- */
+        .status-zagadki-pisany {
+            font-size: 0.9em;
+            line-height: 1.4;
+            color: #dc3545;
+            min-height: 3em;
+            margin-top: 15px;
+            overflow: hidden;
+            /* USUNIĘTY border-right */
+            /* USUNIĘTA animation */
+        }
+        
+        /* Animacja kursora jest wciąż tu, ale nie jest używana */
+        @keyframes mruganie-kursora {
+            from, to { border-color: transparent }
+            50% { border-color: #FF69B4; }
+        }
+        
+        .koniec-pisania {
+            /* Ten styl już nic nie robi, ale nie szkodzi */
+            border-right-color: transparent;
+            animation: none;
+        }
+
+        .kartka-prawa-strona input[type="text"] {
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            margin-right: 0;
+            text-align: center;
+        }
+        
+        .kartka-prawa-strona button {
+            width: 100%;
+        }
+
+        /* USUNIĘTE style dla #ekran-start, bo .ekran radzi sobie sam */
+
+        @keyframes wstrzas {
+            0% { transform: translateX(0); } 25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); } 75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+        
+    </style>
+</head>
+<body>
+    <canvas id="konfetti-canvas"></canvas>
+
+    <div id="ekran-start" class="ekran">
+        <h1>Ktoś tu chyba ma urodziny</h1>
+        <div id="przycisk-prezent" class="prezent-container">
+            <img src="prezent.png" alt="Pudełko z prezentem">
+            <span class="hover-text">Otwórz!</span>
+        </div>
+        <p>Przechodzisz dalej na własna odpowiedzialność</p>
+    </div>
+
+    <div id="ekran-zagadka" class="ekran ukryty kartka">
+        
+        <div class="kartka-lewa-strona">
+            <h1>DLA ALICJI</h1>
+            <p class="zyczenia">Wszystkiego co najlepsze, dużo zdrowia, szcześcia, radości, żebyś już nigdy nie musiała robić nóg ani cardio, fajnych ludzi dookoła i żeby kawa sie nigdy w kubku nie kończyla!
+            </p>
+            <p class="zyczenia">Ale najpierw potwierdzmy twoja tożsamość...</p>
+        </div>
+
+        <div class="kartka-prawa-strona">
+            <h2>ROZWIAZ ZAGADKE</h2>
+            
+            <p class="label-zagadki">ZAGADKA:</p>
+            
+            <p class="tresc-zagadki">"Dowodził 1-szej Dywizji Piechoty im. Tadeusza Kościuszki, która brała udział w bitwie pod Lenino"</p>
+            
+            <input type="text" id="input-odpowiedz" placeholder="Wpisz odpowiedź...">
+            <button id="przycisk-zagadka">ODPOWIEDZ</button>
+            
+            <p id="status-zagadki" class="status-zagadki-pisany"></p>
+        </div>
+    </div>
+
+    <div id="ekran-tort" class="ekran ukryty">
+        <h2>Pomyśl życzenie i zdmuchnij świeczki!</h2>
+        
+        <img id="obrazek-tortu" src="zapalone2.gif" alt="Tort ze świeczkami">
+        <div class="progress-container">
+            <div id="progress-bar">0%</div>
+        </div>
+        <div id="status-dmuchania">Start!</div>
+        <button id="przycisk-backup">Mikrofon nie działa? Zdmuchnij awaryjnie.</button>
+    </div>
+
+    <div id="ekran-przetwarzanie" class="ekran ukryty">
+        <h2>Trwa realizacja Twojego życzenia...</h2>
+        <div id="status-przetwarzania">Analizowanie życzenia...</div>
+    </div>
+
+    <div id="ekran-ujawnienie" class="ekran ukryty">
+        <h2 style="color: #007bff;">Znam Twoje życzenie!</h2>
+        <p style="font-size: 1.3em;">Tak naprawde... chciałaś zobaczyć mnie! 😉</p>
+    </div>
+    
+    <div id="ekran-wideo" class="ekran ukryty">
+        <video id="player-wideo" src="Koszmar-mini.mp4"></video>
+    </div>
+
+    <div id="ekran-final" class="ekran ukryty">
+        <h1>Wszystkiego Najlepszego!</h1>
+        <h2>Sto lat! 🥳</h2>
+        <p>(I żeby wszystkie pozostałe życzenia też sie spełniły)</p>
+    </div>
+
+
+    <script>
+        // --- 3A: Łączenie elementów ---
+        const ekranStart = document.getElementById('ekran-start');
+        const ekranZagadka = document.getElementById('ekran-zagadka');
+        const ekranTort = document.getElementById('ekran-tort');
+        const ekranFinal = document.getElementById('ekran-final');
+        const przyciskPrezent = document.getElementById('przycisk-prezent');
+        const obrazekTortu = document.getElementById('obrazek-tortu');
+        const statusDmuchania = document.getElementById('status-dmuchania');
+        const przyciskZagadka = document.getElementById('przycisk-zagadka');
+        const inputOdpowiedz = document.getElementById('input-odpowiedz');
+        const statusZagadki = document.getElementById('status-zagadki');
+        const progressBar = document.getElementById('progress-bar');
+        const przyciskBackup = document.getElementById('przycisk-backup');
+        const ekranPrzetwarzanie = document.getElementById('ekran-przetwarzanie');
+        const ekranUjawnienie = document.getElementById('ekran-ujawnienie');
+        const ekranWideo = document.getElementById('ekran-wideo');
+        const statusPrzetwarzania = document.getElementById('status-przetwarzania');
+        const playerWideo = document.getElementById('player-wideo');
+        const konfettiCanvas = document.getElementById('konfetti-canvas');
+        
+       // --- NOWA, UPROSZCZONA Funkcja do przełączania ekranów ---
+       function pokazEkran(ekranDoPokazania) {
+            
+            // Ukryj WSZYSTKIE ekrany
+            document.querySelectorAll('.ekran').forEach(e => {
+                e.classList.add('ukryty');
+                e.style.display = 'none'; 
+            });
+
+            // Resetowanie pisanego statusu (zostaje, jest OK)
+            if (ekranDoPokazania.id !== 'ekran-zagadka') {
+                 const statusEl = document.getElementById('status-zagadki');
+                 if(statusEl) {
+                     statusEl.innerHTML = '';
+                     statusEl.classList.remove('koniec-pisania');
+                 }
+            }
+            
+            ekranDoPokazania.classList.remove('ukryty');
+            
+            // --- POPRAWKA ---
+            // Użyj 'flex' dla kartki, 'block' dla WSZYSTKIEGO innego
+            if (ekranDoPokazania.classList.contains('kartka')) {
+                ekranDoPokazania.style.display = 'flex'; 
+            } else {
+                ekranDoPokazania.style.display = 'block'; 
+            }
+            // --- KONIEC POPRAWKI ---
+            
+            setTimeout(() => {
+                ekranDoPokazania.style.opacity = '1';
+            }, 10);
+        }
+
+        // --- Logika "Dmuchnięcia" (bez zmian) ---
+        let stanDmuchniecia = 0;
+        let nasluchiwanieAktywne = true;
+        const POZIOM_DMUCHNIECIA = 50; 
+        async function startMikrofonu() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const audioContext = new AudioContext();
+                const analyser = audioContext.createAnalyser();
+                const source = audioContext.createMediaStreamSource(stream);
+                source.connect(analyser);
+                analyser.fftSize = 512;
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+                function sprawdzDmuchniecie() {
+                    if (!nasluchiwanieAktywne) return; 
+                    analyser.getByteFrequencyData(dataArray);
+                    let suma = 0;
+                    for (let i = 0; i < bufferLength; i++) { suma += dataArray[i]; }
+                    let srednia = suma / bufferLength;
+                    if (srednia > POZIOM_DMUCHNIECIA) { obsluzDmuchniecie(); }
+                    requestAnimationFrame(sprawdzDmuchniecie);
+                }
+                sprawdzDmuchniecie();
+                statusDmuchania.textContent = "Dmuchnij!";
+            } catch (err) {
+                console.error("Bład mikrofonu:", err);
+                statusDmuchania.textContent = "Bład mikrofonu!";
+                przyciskBackup.style.display = 'block';
+            }
+        }
+        let czyMogeDmuchnac = true;
+        function obsluzDmuchniecie() {
+            if (!czyMogeDmuchnac || !nasluchiwanieAktywne) return;
+            czyMogeDmuchnac = false;
+            setTimeout(() => { czyMogeDmuchnac = true; }, 1000); 
+            stanDmuchniecia++;
+            if (stanDmuchniecia === 1) {
+                statusDmuchania.textContent = "Mocniej!";
+                progressBar.style.width = '20%'; progressBar.textContent = '20%';
+            } else if (stanDmuchniecia === 2) {
+                statusDmuchania.textContent = "Jeszcze raz! Dasz rade!";
+                progressBar.style.width = '20%'; progressBar.textContent = '20%';
+            } else if (stanDmuchniecia === 3) {
+                statusDmuchania.textContent = "Udało się!";
+                progressBar.style.width = '100%'; progressBar.textContent = '100%!';
+                nasluchiwanieAktywne = false; 
+                uruchomFinal();
+            }
+        }
+
+        // --- Logika Finału (bez zmian) ---
+        function uruchomFinal() {
+            nasluchiwanieAktywne = false; 
+            obrazekTortu.src = 'dymek2.gif'; 
+            przyciskBackup.style.display = 'none';
+            statusDmuchania.style.display = 'none';
+
+            setTimeout(() => { pokazEkran(ekranPrzetwarzanie); }, 1500); 
+            setTimeout(() => { statusPrzetwarzania.textContent = "Sprawdzanie bazy danych marzeń..."; }, 3000); 
+            setTimeout(() => { statusPrzetwarzania.textContent = "Analiza marzeń... ZNALEZIONO!"; }, 5000); 
+            setTimeout(() => { pokazEkran(ekranUjawnienie); }, 6500); 
+            setTimeout(() => {
+                pokazEkran(ekranWideo);
+                playerWideo.play();
+            }, 9000); 
+        }
+        
+        // --- POPRAWIONA Funkcja Konfetti (zmienia z-index) ---
+        function uruchomKonfetti() {
+            konfettiCanvas.style.zIndex = 100;
+            const confettiSettings = { 
+                target: konfettiCanvas, max: 150, size: 1.2, animate: true,
+                props: ['circle', 'square', 'triangle', 'line'],
+                colors: [[165,104,246],[230,61,135],[0,199,228],[253,214,126]],
+                clock: 30, rotate: true, start_from_edge: true, respawn: false
+            };
+            const confetti = new ConfettiGenerator(confettiSettings);
+            confetti.render();
+
+            setTimeout(() => {
+                confetti.clear();
+                konfettiCanvas.style.zIndex = 5;
+            }, 5000);
+        }
+
+        // --- Logika Uruchomienia (z Zagadką) ---
+        
+       // 1. Kliknięcie w PREZENT
+       przyciskPrezent.addEventListener('click', () => {
+        pokazEkran(ekranZagadka);
+        });
+
+        // 2. Sprawdzenie ODPOWIEDZI
+        przyciskZagadka.addEventListener('click', () => {
+            const poprawnaOdpowiedz = "Zygmunt Berling".toLowerCase().trim();
+            const probaUzytkownika = inputOdpowiedz.value.toLowerCase().trim();
+
+            przyciskZagadka.disabled = true;
+            inputOdpowiedz.disabled = true;
+
+            let tekstOdpowiedzi = "";
+            
+            if (probaUzytkownika === poprawnaOdpowiedz) {
+                statusZagadki.style.color = "#28a745";
+                tekstOdpowiedzi = "Wiedziałem, że zapomn... ale zeby tak oszukiwać!";
+            } else {
+                statusZagadki.style.color = "#dc3545";
+                tekstOdpowiedzi = "Wiedziałem, że nie bedziesz tego pamietać!";
+            }
+
+            // --- POPRAWKA: SPOWOLNIONE PISANIE ---
+            startTypewriter(statusZagadki, tekstOdpowiedzi, 100, () => { // Było 50, jest 100
+                setTimeout(() => {
+                    pokazEkran(ekranTort);
+                    startMikrofonu(); 
+                    
+                    przyciskZagadka.disabled = false;
+                    inputOdpowiedz.disabled = false;
+                    inputOdpowiedz.value = "";
+                    statusZagadki.innerHTML = "";
+                }, 2500); 
+            });
+        });
+        
+        // 3. Przycisk AWARYJNY
+        przyciskBackup.addEventListener('click', () => {
+            statusDmuchania.textContent = "Zdmuchniete!";
+            progressBar.style.width = '100%';
+            progressBar.textContent = '100%!';
+            uruchomFinal();
+        });
+
+        // 4. Koniec WIDEO
+        playerWideo.addEventListener('ended', () => {
+            pokazEkran(ekranFinal);
+            uruchomKonfetti();
+        });
+
+        // 5. Zatwierdzanie ENTEREM
+        inputOdpowiedz.addEventListener('keyup', function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                przyciskZagadka.click();
+            }
+        });
+
+        // --- NOWA FUNKCJA: EFEKT PISANIA NA MASZYNIE ---
+        function startTypewriter(element, text, speed, onComplete) {
+            let i = 0;
+            element.innerHTML = ''; 
+            element.classList.remove('koniec-pisania');
+            
+            function type() {
+                if (i < text.length) {
+                    if (text.substring(i, i+4) === '<br>') {
+                        element.innerHTML += '<br>';
+                        i += 4;
+                    } else {
+                        element.innerHTML += text.charAt(i);
+                        i++;
+                    }
+                    setTimeout(type, speed);
+                } else {
+                    element.classList.add('koniec-pisania');
+                    if (onComplete) {
+                        onComplete();
+                    }
+                }
+            }
+            type();
+        }
+    </script>
+    
+    </body>
+</html>
