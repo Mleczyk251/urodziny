@@ -312,6 +312,8 @@
 <body>
     <canvas id="konfetti-canvas"></canvas>
 
+    <audio id="audio-tlo" src="muzyka2.mp3" loop></audio>
+
     <div id="ekran-start" class="ekran">
         <h1>Ktoś tu chyba ma urodziny</h1>
         <div id="przycisk-prezent" class="prezent-container">
@@ -399,6 +401,7 @@
         const playerWideo = document.getElementById('player-wideo');
         const konfettiCanvas = document.getElementById('konfetti-canvas');
         const przyciskStartWideo = document.getElementById('przycisk-start-wideo');
+        const audioTlo = document.getElementById('audio-tlo');
         
        // --- NOWA, UPROSZCZONA Funkcja do przełączania ekranów ---
        function pokazEkran(ekranDoPokazania) {
@@ -527,6 +530,8 @@
        // 1. Kliknięcie w PREZENT
        przyciskPrezent.addEventListener('click', () => {
         pokazEkran(ekranZagadka);
+           audioTlo.volume = 0.04; 
+            audioTlo.play();
         });
 
         // 2. Sprawdzenie ODPOWIEDZI
@@ -584,6 +589,7 @@
         });
 
         przyciskStartWideo.addEventListener('click', () => {
+            audioTlo.pause();
             playerWideo.play();
             // Ukryj przycisk po kliknięciu, żeby nie zasłaniał filmu
             przyciskStartWideo.style.display = 'none';
