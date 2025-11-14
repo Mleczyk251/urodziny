@@ -299,6 +299,45 @@
             font-size: 1.2em; /* Możemy go trochę powiększyć */
         }
 
+        /* --- POPRAWKI DLA TELEFONÓW (Responsive Design) --- */
+
+@media (max-width: 850px) {
+    
+    /* 1. Poprawka dla "Kartki" z zagadką */
+    .kartka {
+        flex-direction: column; /* Zmień układ na pionowy */
+        width: 90%; /* Niech zajmie prawie całą szerokość */
+        
+        /* Poprawka, by ekran się mieścił w całości */
+        padding: 1.5em; 
+        max-height: 90vh;
+        overflow-y: auto; /* Pozwól przewijać, jeśli się nie mieści */
+    }
+    
+    .kartka-lewa-strona, .kartka-prawa-strona {
+        width: 100%; /* Niech każda część zajmie pełną szerokość */
+        padding: 1em; /* Zmniejsz trochę padding wewnątrz */
+    }
+    
+    .kartka-lewa-strona {
+        border-right: none; /* Usuń prawą linię podziału */
+        border-bottom: 3px dashed #e0e0e0; /* Dodaj ją na dole */
+    }
+    
+    /* 2. Poprawka czcionek na małych ekranach */
+    h1 { font-size: 1.3em; }
+    h2 { font-size: 1.0em; }
+    p { font-size: 0.8em; }
+
+    .kartka-lewa-strona h1 { font-size: 1.5em; }
+    .kartka-prawa-strona h2 { font-size: 1.1em; }
+
+    /* 3. Poprawka okna wideo (na wszelki wypadek) */
+    #ekran-wideo {
+        width: 95%; /* Upewnij się, że nie jest za szerokie */
+    }
+}
+
         /* USUNIĘTE style dla #ekran-start, bo .ekran radzi sobie sam */
 
         @keyframes wstrzas {
@@ -368,7 +407,7 @@
     </div>
     
     <div id="ekran-wideo" class="ekran ukryty">
-        <video id="player-wideo" src="Koszmar-mini.mp4"></video>
+        <video id="player-wideo" src="Koszmar-mini.mp4" playsinline></video>
 
         <button id="przycisk-start-wideo">ODTWORZ</button>
     </div>
@@ -530,7 +569,7 @@
        // 1. Kliknięcie w PREZENT
        przyciskPrezent.addEventListener('click', () => {
         pokazEkran(ekranZagadka);
-           audioTlo.volume = 0.1; 
+           audioTlo.volume = 0.04; 
             audioTlo.play();
         });
 
@@ -594,6 +633,22 @@
             // Ukryj przycisk po kliknięciu, żeby nie zasłaniał filmu
             przyciskStartWideo.style.display = 'none';
         });
+
+        playerWideo.addEventListener('click', () => {
+    // Nie rób nic, jeśli przycisk "ODTWÓRZ" jest jeszcze widoczny
+    if (przyciskStartWideo.style.display === 'block') {
+        return;
+    }
+
+    // Jeśli film jest spauzowany - włącz go
+    if (playerWideo.paused) {
+        playerWideo.play();
+    } 
+    // Jeśli film gra - spauzuj go
+    else {
+        playerWideo.pause();
+    }
+});
 
         // --- NOWA FUNKCJA: EFEKT PISANIA NA MASZYNIE ---
         function startTypewriter(element, text, speed, onComplete) {
